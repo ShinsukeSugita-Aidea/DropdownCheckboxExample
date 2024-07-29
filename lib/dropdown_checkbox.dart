@@ -9,6 +9,7 @@ class DropdownCheckbox extends StatefulWidget {
     this.cancelText = 'Cancel',
     this.height,
     this.popupHeight,
+    this.initialSelectedItems = const [], // 追加
     super.key,
   });
   final List<(String value, String label)> items;
@@ -17,6 +18,7 @@ class DropdownCheckbox extends StatefulWidget {
   final String cancelText;
   final double? height;
   final double? popupHeight;
+  final List<String> initialSelectedItems; // 追加
   final void Function(List<String>) onChanged;
 
   @override
@@ -34,6 +36,9 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
   @override
   void initState() {
     super.initState();
+
+    // 初期選択アイテムの設定
+    _selectedCheckboxItems = List.from(widget.initialSelectedItems);
     _filteredItems = List.from(widget.items);
     _originalItemsOrder = List.from(widget.items); // 初期化時に元の順序を保存
   }

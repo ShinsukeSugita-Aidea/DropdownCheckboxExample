@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
       body: Center(
         child: DropdownCheckbox(
             items: items,
+            initialSelectedItems: ['item_2', 'item_4'], // 初期選択アイテムを指定
             onChanged: (list) {
               for (final item in list) {
                 print(item);

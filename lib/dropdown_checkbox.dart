@@ -124,6 +124,12 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
     double dropdownHeight = widget.height ?? 60;
     double popupHeight = widget.popupHeight ?? 300;
 
+    // タグ用
+    // _selectedCheckboxItems の順序を _originalItemsOrder に基づいて並べ替え
+    List<String> sortedSelectedItems = _originalItemsOrder
+        .where((item) => _selectedCheckboxItems.contains(item))
+        .toList();
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -247,11 +253,13 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: _selectedCheckboxItems.map((item) {
+                        children: sortedSelectedItems.map((item) {
+                          // タグ
                           return Padding(
                             padding: const EdgeInsets.only(right: 6.0),
                             child: Chip(
                               label: Text(item),
+                              // バツボタン
                               deleteIcon: const Icon(
                                 Icons.clear,
                                 size: 18,

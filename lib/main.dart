@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
         title: const Text('チェックボックス実験'),
       ),
       body: const Center(
-        child: DropdownCheckboxExample(),
+        child: DropdownCheckbox(),
       ),
     ));
   }

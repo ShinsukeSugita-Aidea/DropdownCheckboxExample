@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 
-class DropdownCheckboxExample extends StatefulWidget {
-  const DropdownCheckboxExample({super.key});
+class DropdownCheckbox extends StatefulWidget {
+  final String okText;
+  final String cancelText;
+
+  const DropdownCheckbox({
+    this.okText = 'OK',
+    this.cancelText = 'Cancel',
+    Key? key,
+  }) : super(key: key);
 
   @override
-  DropdownCheckboxExampleState createState() => DropdownCheckboxExampleState();
+  DropdownCheckboxState createState() => DropdownCheckboxState();
 }
 
-class DropdownCheckboxExampleState extends State<DropdownCheckboxExample> {
+class DropdownCheckboxState extends State<DropdownCheckbox> {
   final List<String> _items = List.generate(50, (index) => 'Item ${index + 1}');
   List<String> _filteredItems = [];
   List<String> _selectedCheckboxItems = [];
@@ -49,7 +56,6 @@ class DropdownCheckboxExampleState extends State<DropdownCheckboxExample> {
     });
   }
 
-  // タグみたいな部分からの削除
   void _removeItem(String item) {
     setState(() {
       _selectedCheckboxItems.remove(item);
@@ -58,7 +64,6 @@ class DropdownCheckboxExampleState extends State<DropdownCheckboxExample> {
     });
   }
 
-  // xボタンでの全部消す
   void _clearAll() {
     setState(() {
       _selectedCheckboxItems.clear();
@@ -93,13 +98,12 @@ class DropdownCheckboxExampleState extends State<DropdownCheckboxExample> {
               _applySelection();
             },
             itemBuilder: (context) {
-              // 反映
-              _tempSelectedItems.clear(); // 一度全部削除して
+              // 一度全部削除して
+              _tempSelectedItems.clear();
               for (final item in _selectedCheckboxItems) {
-                // 反映
                 _tempSelectedItems.add(item);
               }
-              // 優先度反映
+              // アイテムの優先順位を設定
               _prioritizeSelectedItems();
               // 枠タップのたびに走る
               return [
@@ -119,13 +123,13 @@ class DropdownCheckboxExampleState extends State<DropdownCheckboxExample> {
                           if (!isSelected &&
                               !dividerAdded &&
                               _tempSelectedItems.isNotEmpty) {
-                            // 水平線
+                            // 水平線を追加
                             itemsWidgets
                                 .add(const Divider(color: Colors.black));
                             dividerAdded = true;
                           }
+                          // チェックボックスのあるボタンを含める
                           itemsWidgets.add(
-                            // チェックのあるボタン
                             CheckboxListTile(
                               controlAffinity: ListTileControlAffinity.leading,
                               title: Text(item),
@@ -174,14 +178,14 @@ class DropdownCheckboxExampleState extends State<DropdownCheckboxExample> {
                                     Navigator.pop(context);
                                     _cancelSelection();
                                   },
-                                  child: const Text('Cancel'),
+                                  child: Text(widget.cancelText), // テキストを使用
                                 ),
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(context);
                                     _applySelection();
                                   },
-                                  child: const Text('OK'),
+                                  child: Text(widget.okText), // テキストを使用
                                 ),
                               ],
                             ),
@@ -202,8 +206,8 @@ class DropdownCheckboxExampleState extends State<DropdownCheckboxExample> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // タグみたいな部分
                   Expanded(
+                    // タグみたいな部分
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
@@ -238,8 +242,8 @@ class DropdownCheckboxExampleState extends State<DropdownCheckboxExample> {
                       ),
                     ),
                   if (_selectedCheckboxItems.isNotEmpty)
+                    // xボタン
                     IconButton(
-                      // xボタン
                       icon: const Icon(Icons.clear),
                       onPressed: _clearAll,
                     ),

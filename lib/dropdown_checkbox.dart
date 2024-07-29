@@ -7,9 +7,11 @@ class DropdownCheckbox extends StatefulWidget {
   final String cancelText;
   final double? height;
   final double? popupHeight;
+  final Function(List<String>) onChanged;
 
   const DropdownCheckbox({
     required this.items,
+    required this.onChanged,
     this.searchHintText = 'Search',
     this.okText = 'OK',
     this.cancelText = 'Cancel',
@@ -106,13 +108,18 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
     });
   }
 
+  // OK押下の処理
   void _applySelection() {
     setState(() {
       _selectedCheckboxItems = List.from(_tempSelectedItems);
       _updateSelectedText();
+
+      // 返す
+      widget.onChanged(_selectedCheckboxItems);
     });
   }
 
+  // キャンセル押下の処理
   void _cancelSelection() {
     setState(() {
       _tempSelectedItems.clear();

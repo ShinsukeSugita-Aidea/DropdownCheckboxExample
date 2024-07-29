@@ -20,8 +20,12 @@ class MyApp extends StatelessWidget {
       ),
       body: Center(
         child: DropdownCheckbox(
-          items: items,
-        ),
+            items: items,
+            onChanged: (list) {
+              for (final item in list) {
+                print(item);
+              }
+            }),
       ),
     ));
   }

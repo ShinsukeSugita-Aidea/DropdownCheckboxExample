@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class DropdownCheckbox extends StatefulWidget {
-  final List<String> items;
+  final List<(String value, String label)> items;
   final String searchHintText;
   final String okText;
   final String cancelText;
@@ -25,11 +25,11 @@ class DropdownCheckbox extends StatefulWidget {
 }
 
 class DropdownCheckboxState extends State<DropdownCheckbox> {
-  late List<String> _filteredItems;
+  late List<(String value, String label)> _filteredItems;
   List<String> _selectedCheckboxItems = [];
   String _searchQuery = "";
   final List<String> _tempSelectedItems = [];
-  late List<String> _originalItemsOrder; // 元の順序を保持するリスト
+  late List<(String value, String label)> _originalItemsOrder; // 元の順序を保持するリスト
   List<bool> _dividerPositions = []; // 水平線の位置を管理するリスト
 
   @override
@@ -43,10 +43,9 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
   void _updateSearchQuery(String query, StateSetter setState) {
     setState(() {
       _searchQuery = query;
-      _filteredItems = _originalItemsOrder
-          .where(
-              (item) => item.toLowerCase().contains(_searchQuery.toLowerCase()))
-          .toList();
+      _filteredItems = _originalItemsOrder.where((item) =>
+          // $2: label
+          item.$2.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
     });
   }
 
@@ -58,7 +57,8 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
     // リストの各要素をインデックスとともにマップにする
     Map<String, int> originalIndexMap = {};
     for (int i = 0; i < _originalItemsOrder.length; i++) {
-      originalIndexMap[_originalItemsOrder[i]] = i;
+      // $1: value
+      originalIndexMap[_originalItemsOrder[i].$1] = i;
     }
 
     // 水平線の位置をリセット
@@ -66,8 +66,9 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
 
     // カスタムソート関数で並び替えを行う
     _filteredItems.sort((a, b) {
-      bool aSelected = _tempSelectedItems.contains(a);
-      bool bSelected = _tempSelectedItems.contains(b);
+      // $1: value
+      bool aSelected = _tempSelectedItems.contains(a.$1);
+      bool bSelected = _tempSelectedItems.contains(b.$1);
 
       // チェックされた項目を優先して並び替える条件
       if (aSelected && !bSelected) {
@@ -76,8 +77,9 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
         return 1;
       } else {
         // チェック状態が同じ場合は元の順序を維持する
-        int aIndex = originalIndexMap[a]!;
-        int bIndex = originalIndexMap[b]!;
+        // $1: value
+        int aIndex = originalIndexMap[a.$1]!;
+        int bIndex = originalIndexMap[b.$1]!;
         return aIndex.compareTo(bIndex);
       }
     });
@@ -85,8 +87,8 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
     // 水平線の位置を記録する
     bool dividerAdded = false;
     for (int i = 0; i < _filteredItems.length; i++) {
-      String item = _filteredItems[i];
-      bool isSelected = _tempSelectedItems.contains(item);
+      var item = _filteredItems[i];
+      bool isSelected = _tempSelectedItems.contains(item.$1);
       if (!isSelected && !dividerAdded && _tempSelectedItems.isNotEmpty) {
         _dividerPositions[i] = true;
         dividerAdded = true;
@@ -94,9 +96,9 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
     }
   }
 
-  void _removeItem(String item) {
+  void _removeItem(String value) {
     setState(() {
-      _selectedCheckboxItems.remove(item);
+      _selectedCheckboxItems.remove(value);
       _updateSelectedText();
     });
   }
@@ -133,8 +135,8 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
 
     // タグ用
     // _selectedCheckboxItems の順序を _originalItemsOrder に基づいて並べ替え
-    List<String> sortedSelectedItems = _originalItemsOrder
-        .where((item) => _selectedCheckboxItems.contains(item))
+    List<(String value, String label)> sortedSelectedItems = _originalItemsOrder
+        .where((item) => _selectedCheckboxItems.contains(item.$1))
         .toList();
 
     return Column(
@@ -151,8 +153,8 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
             },
             itemBuilder: (context) {
               _tempSelectedItems.clear();
-              for (final item in _selectedCheckboxItems) {
-                _tempSelectedItems.add(item);
+              for (final value in _selectedCheckboxItems) {
+                _tempSelectedItems.add(value);
               }
               return [
                 PopupMenuItem<int>(
@@ -166,8 +168,9 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
 
                         bool dividerAdded = false;
                         for (int i = 0; i < _filteredItems.length; i++) {
-                          String item = _filteredItems[i];
-                          bool isSelected = _tempSelectedItems.contains(item);
+                          var item = _filteredItems[i];
+                          bool isSelected =
+                              _tempSelectedItems.contains(item.$1);
                           // 水平線
                           if (_dividerPositions[i] && !dividerAdded) {
                             itemsWidgets.add(const Divider());
@@ -176,14 +179,14 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                           itemsWidgets.add(
                             CheckboxListTile(
                               controlAffinity: ListTileControlAffinity.leading,
-                              title: Text(item),
+                              title: Text(item.$2),
                               value: isSelected,
                               onChanged: (bool? value) {
                                 setState(() {
                                   if (value == true) {
-                                    _tempSelectedItems.add(item);
+                                    _tempSelectedItems.add(item.$1);
                                   } else {
-                                    _tempSelectedItems.remove(item);
+                                    _tempSelectedItems.remove(item.$1);
                                   }
                                   // チェックボックスの操作後は並び替えをしない
                                 });
@@ -265,14 +268,15 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                           return Padding(
                             padding: const EdgeInsets.only(right: 6.0),
                             child: Chip(
-                              label: Text(item),
+                              label: Text(item.$2),
                               // バツボタン
                               deleteIcon: const Icon(
                                 Icons.clear,
                                 size: 18,
                               ),
                               onDeleted: () {
-                                _removeItem(item);
+                                // $1: value
+                                _removeItem(item.$1);
                               },
                             ),
                           );

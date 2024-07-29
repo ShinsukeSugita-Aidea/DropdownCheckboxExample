@@ -10,13 +10,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> _items =
+        List.generate(50, (index) => 'Item ${index + 1}');
     return MaterialApp(
         home: Scaffold(
       appBar: AppBar(
         title: const Text('チェックボックス実験'),
       ),
-      body: const Center(
-        child: DropdownCheckbox(),
+      body: Center(
+        child: DropdownCheckbox(
+          items: _items,
+        ),
       ),
     ));
   }

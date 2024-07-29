@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
 class DropdownCheckbox extends StatefulWidget {
+  final List<String> items;
+  final String searchHintText;
   final String okText;
   final String cancelText;
 
   const DropdownCheckbox({
+    required this.items,
+    this.searchHintText = 'Search',
     this.okText = 'OK',
     this.cancelText = 'Cancel',
     Key? key,
@@ -15,8 +19,7 @@ class DropdownCheckbox extends StatefulWidget {
 }
 
 class DropdownCheckboxState extends State<DropdownCheckbox> {
-  final List<String> _items = List.generate(50, (index) => 'Item ${index + 1}');
-  List<String> _filteredItems = [];
+  late List<String> _filteredItems;
   List<String> _selectedCheckboxItems = [];
   String _searchQuery = "";
   final List<String> _tempSelectedItems = [];
@@ -24,13 +27,13 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
   @override
   void initState() {
     super.initState();
-    _filteredItems = List.from(_items);
+    _filteredItems = List.from(widget.items);
   }
 
   void _updateSearchQuery(String query, StateSetter setState) {
     setState(() {
       _searchQuery = query;
-      _filteredItems = _items
+      _filteredItems = widget.items
           .where(
               (item) => item.toLowerCase().contains(_searchQuery.toLowerCase()))
           .toList();
@@ -98,14 +101,14 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
               _applySelection();
             },
             itemBuilder: (context) {
-              // 一度全部削除して
+              // 変更を適用
               _tempSelectedItems.clear();
               for (final item in _selectedCheckboxItems) {
                 _tempSelectedItems.add(item);
               }
               // アイテムの優先順位を設定
               _prioritizeSelectedItems();
-              // 枠タップのたびに走る
+              // 枠タップのたびに以下の処理が走る
               return [
                 PopupMenuItem<int>(
                   enabled: false,
@@ -158,9 +161,9 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: TextField(
-                                decoration: const InputDecoration(
-                                  hintText: "Search",
-                                  suffixIcon: Icon(Icons.search),
+                                decoration: InputDecoration(
+                                  hintText: widget.searchHintText, // 検索のテキストを使用
+                                  suffixIcon: const Icon(Icons.search),
                                 ),
                                 onChanged: (query) {
                                   _updateSearchQuery(query, setState);

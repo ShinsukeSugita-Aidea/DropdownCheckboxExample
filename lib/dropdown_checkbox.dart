@@ -5,12 +5,16 @@ class DropdownCheckbox extends StatefulWidget {
   final String searchHintText;
   final String okText;
   final String cancelText;
+  final double? height;
+  final double? popupHeight;
 
   const DropdownCheckbox({
     required this.items,
     this.searchHintText = 'Search',
     this.okText = 'OK',
     this.cancelText = 'Cancel',
+    this.height,
+    this.popupHeight,
     Key? key,
   }) : super(key: key);
 
@@ -90,11 +94,14 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
 
   @override
   Widget build(BuildContext context) {
+    double dropdownHeight = widget.height ?? 60;
+    double popupHeight = widget.popupHeight ?? 300; // 追加
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SizedBox(
-          height: 60,
+          height: dropdownHeight,
           width: MediaQuery.of(context).size.width * 0.5,
           child: PopupMenuButton<int>(
             onSelected: (value) {
@@ -113,7 +120,7 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                 PopupMenuItem<int>(
                   enabled: false,
                   child: SizedBox(
-                    height: 300,
+                    height: popupHeight,
                     width: MediaQuery.of(context).size.width * 0.8,
                     child: StatefulBuilder(
                       builder: (context, setState) {

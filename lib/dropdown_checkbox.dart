@@ -7,9 +7,6 @@ class DropdownCheckbox extends StatefulWidget {
   final String cancelText;
   final double? height;
   final double? popupHeight;
-  final Color textColor; // テキストの色を設定するプロパティ
-  final Color backgroundColor; // 背景色を設定するプロパティ
-  final Color popupBackgroundColor; // 追加: ポップアップの背景色
 
   const DropdownCheckbox({
     required this.items,
@@ -18,9 +15,6 @@ class DropdownCheckbox extends StatefulWidget {
     this.cancelText = 'Cancel',
     this.height,
     this.popupHeight,
-    this.textColor = Colors.black, // デフォルトのテキスト色を黒に設定
-    this.backgroundColor = Colors.white, // デフォルトの背景色を白に設定
-    this.popupBackgroundColor = Colors.white, // デフォルトのポップアップ背景色を設定
     Key? key,
   }) : super(key: key);
 
@@ -111,8 +105,6 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
           width: MediaQuery.of(context).size.width * 0.5,
           // ポップアップのボタン
           child: PopupMenuButton<int>(
-            // 背景色
-            color: widget.popupBackgroundColor,
             onSelected: (value) {
               _applySelection();
             },
@@ -128,9 +120,7 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
               return [
                 PopupMenuItem<int>(
                   enabled: false,
-                  child: Container(
-                    // アイテムの背景色
-                    // color: widget.popupBackgroundColor,
+                  child: SizedBox(
                     height: popupHeight,
                     width: MediaQuery.of(context).size.width * 0.8,
                     child: StatefulBuilder(
@@ -145,8 +135,9 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                               !dividerAdded &&
                               _tempSelectedItems.isNotEmpty) {
                             // 水平線を追加
-                            itemsWidgets
-                                .add(const Divider(color: Colors.black));
+                            itemsWidgets.add(
+                              const Divider(),
+                            );
                             dividerAdded = true;
                           }
                           // チェックボックスのあるボタンを含める
@@ -202,10 +193,7 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                                   },
                                   child: Text(
                                     widget.cancelText,
-                                    style: TextStyle(
-                                      // テキスト色を設定
-                                      color: widget.textColor,
-                                    ),
+                                    style: TextStyle(),
                                   ),
                                 ),
                                 TextButton(
@@ -215,10 +203,6 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                                   },
                                   child: Text(
                                     widget.okText,
-                                    style: TextStyle(
-                                      // テキスト色を設定
-                                      color: widget.textColor,
-                                    ),
                                   ),
                                 ),
                               ],
@@ -236,8 +220,6 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.black),
                 borderRadius: BorderRadius.circular(5),
-                // 背景色を設定
-                color: widget.backgroundColor,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

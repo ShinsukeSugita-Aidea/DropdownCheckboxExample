@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> _items =
+    final List<String> items =
         List.generate(50, (index) => 'Item ${index + 1}');
     return MaterialApp(
         home: Scaffold(
@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
       ),
       body: Center(
         child: DropdownCheckbox(
-          items: _items,
+          items: items,
         ),
       ),
     ));

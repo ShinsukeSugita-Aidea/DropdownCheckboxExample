@@ -226,6 +226,11 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                             padding: const EdgeInsets.only(right: 6.0),
                             child: Chip(
                               label: Text(item),
+                              // 削除のバツアイコン
+                              deleteIcon: const Icon(
+                                Icons.clear,
+                                size: 18,
+                              ), //
                               onDeleted: () {
                                 _removeItem(item);
                               },

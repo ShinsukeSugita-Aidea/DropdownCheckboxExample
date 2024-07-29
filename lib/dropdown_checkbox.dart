@@ -28,6 +28,7 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
   String _searchQuery = "";
   final List<String> _tempSelectedItems = [];
   late List<String> _originalItemsOrder; // 元の順序を保持するリスト
+  List<bool> _dividerPositions = []; // 水平線の位置を管理するリスト
 
   @override
   void initState() {
@@ -58,6 +59,9 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
       originalIndexMap[_originalItemsOrder[i]] = i;
     }
 
+    // 水平線の位置をリセット
+    _dividerPositions = List.generate(_filteredItems.length, (index) => false);
+
     // カスタムソート関数で並び替えを行う
     _filteredItems.sort((a, b) {
       bool aSelected = _tempSelectedItems.contains(a);
@@ -75,6 +79,17 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
         return aIndex.compareTo(bIndex);
       }
     });
+
+    // 水平線の位置を記録する
+    bool dividerAdded = false;
+    for (int i = 0; i < _filteredItems.length; i++) {
+      String item = _filteredItems[i];
+      bool isSelected = _tempSelectedItems.contains(item);
+      if (!isSelected && !dividerAdded && _tempSelectedItems.isNotEmpty) {
+        _dividerPositions[i] = true;
+        dividerAdded = true;
+      }
+    }
   }
 
   void _removeItem(String item) {
@@ -140,10 +155,8 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                         for (int i = 0; i < _filteredItems.length; i++) {
                           String item = _filteredItems[i];
                           bool isSelected = _tempSelectedItems.contains(item);
-                          if (!isSelected &&
-                              !dividerAdded &&
-                              _tempSelectedItems.isNotEmpty) {
-                            // 水平線
+                          // 水平線
+                          if (_dividerPositions[i] && !dividerAdded) {
                             itemsWidgets.add(const Divider());
                             dividerAdded = true;
                           }

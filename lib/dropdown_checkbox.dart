@@ -117,6 +117,7 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
           width: MediaQuery.of(context).size.width * 0.5,
           child: PopupMenuButton<int>(
             onOpened: () {
+              // 開いた瞬間に並び替え
               _filteredItems = List.from(_originalItemsOrder);
               _prioritizeSelectedItems();
             },
@@ -142,6 +143,7 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                           if (!isSelected &&
                               !dividerAdded &&
                               _tempSelectedItems.isNotEmpty) {
+                            // 水平線
                             itemsWidgets.add(const Divider());
                             dividerAdded = true;
                           }
@@ -163,8 +165,8 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                             ),
                           );
                         }
-
                         if (_tempSelectedItems.isEmpty) {
+                          // 水平線消す
                           itemsWidgets.removeWhere(
                             (widget) => widget is Divider,
                           );
@@ -175,8 +177,11 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: TextField(
+                                // フォーカスを自動でセットする
+                                autofocus: true,
                                 decoration: InputDecoration(
                                   hintText: widget.searchHintText,
+                                  // 虫眼鏡
                                   suffixIcon: const Icon(Icons.search),
                                 ),
                                 onChanged: (query) {
@@ -190,6 +195,7 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
+                                // キャンセル
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(context);
@@ -197,6 +203,7 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                                   },
                                   child: Text(widget.cancelText),
                                 ),
+                                // OK
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(context);
@@ -260,10 +267,12 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                       ),
                     ),
                   if (_selectedCheckboxItems.isNotEmpty)
+                    // バツボタン
                     IconButton(
                       icon: const Icon(Icons.clear),
                       onPressed: _clearAll,
                     ),
+                  // 下向きボタン
                   const Icon(Icons.arrow_drop_down),
                 ],
               ),

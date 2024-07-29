@@ -178,6 +178,8 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                                 onChanged: (query) {
                                   _updateSearchQuery(query, setState);
                                 },
+                                // フォーカスを自動でセットする
+                                autofocus: true,
                               ),
                             ),
                             Expanded(

@@ -27,21 +27,23 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
   List<String> _selectedCheckboxItems = [];
   String _searchQuery = "";
   final List<String> _tempSelectedItems = [];
+  late List<String> _originalItemsOrder; // 元の順序を保持するリスト
 
   @override
   void initState() {
     super.initState();
     _filteredItems = List.from(widget.items);
+    _originalItemsOrder = List.from(widget.items); // 初期化時に元の順序を保存
   }
 
+  // 検索フィルタ
   void _updateSearchQuery(String query, StateSetter setState) {
     setState(() {
       _searchQuery = query;
-      _filteredItems = widget.items
+      _filteredItems = _originalItemsOrder
           .where(
               (item) => item.toLowerCase().contains(_searchQuery.toLowerCase()))
           .toList();
-      _prioritizeSelectedItems();
     });
   }
 
@@ -50,15 +52,27 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
   }
 
   void _prioritizeSelectedItems() {
+    // リストの各要素をインデックスとともにマップにする
+    Map<String, int> originalIndexMap = {};
+    for (int i = 0; i < _originalItemsOrder.length; i++) {
+      originalIndexMap[_originalItemsOrder[i]] = i;
+    }
+
+    // カスタムソート関数で並び替えを行う
     _filteredItems.sort((a, b) {
       bool aSelected = _tempSelectedItems.contains(a);
       bool bSelected = _tempSelectedItems.contains(b);
+
+      // チェックされた項目を優先して並び替える条件
       if (aSelected && !bSelected) {
         return -1;
       } else if (!aSelected && bSelected) {
         return 1;
       } else {
-        return 0;
+        // チェック状態が同じ場合は元の順序を維持する
+        int aIndex = originalIndexMap[a]!;
+        int bIndex = originalIndexMap[b]!;
+        return aIndex.compareTo(bIndex);
       }
     });
   }
@@ -67,7 +81,6 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
     setState(() {
       _selectedCheckboxItems.remove(item);
       _updateSelectedText();
-      _prioritizeSelectedItems();
     });
   }
 
@@ -75,7 +88,6 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
     setState(() {
       _selectedCheckboxItems.clear();
       _updateSelectedText();
-      _prioritizeSelectedItems();
     });
   }
 
@@ -95,7 +107,7 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
   @override
   Widget build(BuildContext context) {
     double dropdownHeight = widget.height ?? 60;
-    double popupHeight = widget.popupHeight ?? 300; // 追加
+    double popupHeight = widget.popupHeight ?? 300;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -103,20 +115,16 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
         SizedBox(
           height: dropdownHeight,
           width: MediaQuery.of(context).size.width * 0.5,
-          // ポップアップのボタン
           child: PopupMenuButton<int>(
-            onSelected: (value) {
-              _applySelection();
+            onOpened: () {
+              _filteredItems = List.from(_originalItemsOrder);
+              _prioritizeSelectedItems();
             },
             itemBuilder: (context) {
-              // 変更を適用
               _tempSelectedItems.clear();
               for (final item in _selectedCheckboxItems) {
                 _tempSelectedItems.add(item);
               }
-              // アイテムの優先順位を設定
-              _prioritizeSelectedItems();
-              // 枠タップのたびに以下の処理が走る
               return [
                 PopupMenuItem<int>(
                   enabled: false,
@@ -134,13 +142,9 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                           if (!isSelected &&
                               !dividerAdded &&
                               _tempSelectedItems.isNotEmpty) {
-                            // 水平線を追加
-                            itemsWidgets.add(
-                              const Divider(),
-                            );
+                            itemsWidgets.add(const Divider());
                             dividerAdded = true;
                           }
-                          // チェックボックスのあるボタンを含める
                           itemsWidgets.add(
                             CheckboxListTile(
                               controlAffinity: ListTileControlAffinity.leading,
@@ -153,13 +157,13 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                                   } else {
                                     _tempSelectedItems.remove(item);
                                   }
-                                  _prioritizeSelectedItems();
+                                  // チェックボックスの操作後は並び替えをしない
                                 });
                               },
                             ),
                           );
                         }
-                        // 水平線
+
                         if (_tempSelectedItems.isEmpty) {
                           itemsWidgets.removeWhere(
                             (widget) => widget is Divider,
@@ -172,14 +176,12 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                               padding: const EdgeInsets.all(8.0),
                               child: TextField(
                                 decoration: InputDecoration(
-                                  hintText: widget.searchHintText, // 検索のテキストを使用
+                                  hintText: widget.searchHintText,
                                   suffixIcon: const Icon(Icons.search),
                                 ),
                                 onChanged: (query) {
                                   _updateSearchQuery(query, setState);
                                 },
-                                // フォーカスを自動でセットする
-                                autofocus: true,
                               ),
                             ),
                             Expanded(
@@ -193,19 +195,14 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                                     Navigator.pop(context);
                                     _cancelSelection();
                                   },
-                                  child: Text(
-                                    widget.cancelText,
-                                    style: TextStyle(),
-                                  ),
+                                  child: Text(widget.cancelText),
                                 ),
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(context);
                                     _applySelection();
                                   },
-                                  child: Text(
-                                    widget.okText,
-                                  ),
+                                  child: Text(widget.okText),
                                 ),
                               ],
                             ),
@@ -227,7 +224,6 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Expanded(
-                    // タグみたいな部分
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
@@ -236,11 +232,10 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                             padding: const EdgeInsets.only(right: 6.0),
                             child: Chip(
                               label: Text(item),
-                              // 削除のバツアイコン
                               deleteIcon: const Icon(
                                 Icons.clear,
                                 size: 18,
-                              ), //
+                              ),
                               onDeleted: () {
                                 _removeItem(item);
                               },
@@ -250,17 +245,11 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                       ),
                     ),
                   ),
-                  // 左右の隙間
-                  const SizedBox(
-                    width: 10.0,
-                  ),
+                  const SizedBox(width: 10.0),
                   if (_selectedCheckboxItems.isNotEmpty)
-                    // 数字部分の表示
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8.0,
-                        vertical: 4.0,
-                      ),
+                          horizontal: 8.0, vertical: 4.0),
                       decoration: BoxDecoration(
                         color: Colors.grey,
                         borderRadius: BorderRadius.circular(12.0),
@@ -271,12 +260,10 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                       ),
                     ),
                   if (_selectedCheckboxItems.isNotEmpty)
-                    // xボタン
                     IconButton(
                       icon: const Icon(Icons.clear),
                       onPressed: _clearAll,
                     ),
-                  // 逆三角形
                   const Icon(Icons.arrow_drop_down),
                 ],
               ),

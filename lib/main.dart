@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<String> items =
         List.generate(50, (index) => 'Item ${index + 1}');
+
     return MaterialApp(
         home: Scaffold(
       appBar: AppBar(

@@ -7,6 +7,9 @@ class DropdownCheckbox extends StatefulWidget {
   final String cancelText;
   final double? height;
   final double? popupHeight;
+  final Color textColor; // テキストの色を設定するプロパティ
+  final Color backgroundColor; // 背景色を設定するプロパティ
+  final Color popupBackgroundColor; // 追加: ポップアップの背景色
 
   const DropdownCheckbox({
     required this.items,
@@ -15,6 +18,9 @@ class DropdownCheckbox extends StatefulWidget {
     this.cancelText = 'Cancel',
     this.height,
     this.popupHeight,
+    this.textColor = Colors.black, // デフォルトのテキスト色を黒に設定
+    this.backgroundColor = Colors.white, // デフォルトの背景色を白に設定
+    this.popupBackgroundColor = Colors.white, // デフォルトのポップアップ背景色を設定
     Key? key,
   }) : super(key: key);
 
@@ -103,7 +109,10 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
         SizedBox(
           height: dropdownHeight,
           width: MediaQuery.of(context).size.width * 0.5,
+          // ポップアップのボタン
           child: PopupMenuButton<int>(
+            // 背景色
+            color: widget.popupBackgroundColor,
             onSelected: (value) {
               _applySelection();
             },
@@ -119,7 +128,9 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
               return [
                 PopupMenuItem<int>(
                   enabled: false,
-                  child: SizedBox(
+                  child: Container(
+                    // アイテムの背景色
+                    // color: widget.popupBackgroundColor,
                     height: popupHeight,
                     width: MediaQuery.of(context).size.width * 0.8,
                     child: StatefulBuilder(
@@ -157,10 +168,11 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                             ),
                           );
                         }
-
+                        // 水平線
                         if (_tempSelectedItems.isEmpty) {
-                          itemsWidgets
-                              .removeWhere((widget) => widget is Divider);
+                          itemsWidgets.removeWhere(
+                            (widget) => widget is Divider,
+                          );
                         }
 
                         return Column(
@@ -188,14 +200,26 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                                     Navigator.pop(context);
                                     _cancelSelection();
                                   },
-                                  child: Text(widget.cancelText), // テキストを使用
+                                  child: Text(
+                                    widget.cancelText,
+                                    style: TextStyle(
+                                      // テキスト色を設定
+                                      color: widget.textColor,
+                                    ),
+                                  ),
                                 ),
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(context);
                                     _applySelection();
                                   },
-                                  child: Text(widget.okText), // テキストを使用
+                                  child: Text(
+                                    widget.okText,
+                                    style: TextStyle(
+                                      // テキスト色を設定
+                                      color: widget.textColor,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -212,6 +236,8 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.black),
                 borderRadius: BorderRadius.circular(5),
+                // 背景色を設定
+                color: widget.backgroundColor,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

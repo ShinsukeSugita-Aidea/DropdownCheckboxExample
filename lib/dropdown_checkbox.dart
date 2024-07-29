@@ -240,6 +240,10 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
                       ),
                     ),
                   ),
+                  // 左右の隙間
+                  const SizedBox(
+                    width: 10.0,
+                  ),
                   if (_selectedCheckboxItems.isNotEmpty)
                     // 数字部分の表示
                     Container(

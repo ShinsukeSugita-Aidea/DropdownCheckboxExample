@@ -108,6 +108,9 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
     setState(() {
       _selectedCheckboxItems.remove(value);
       _updateSelectedText();
+
+      // 返す
+      widget.onChanged(_selectedCheckboxItems);
     });
   }
 
@@ -145,182 +148,176 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
         .where((item) => _selectedCheckboxItems.contains(item.$1))
         .toList();
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          height: dropdownHeight,
-          width: MediaQuery.of(context).size.width * 0.5,
-          child: PopupMenuButton<int>(
-            onOpened: () {
-              // 開いた瞬間に並び替え
-              _filteredItems = List.from(_originalItemsOrder);
-              _prioritizeSelectedItems();
-            },
-            itemBuilder: (context) {
-              _tempSelectedItems.clear();
+    return SizedBox(
+      height: dropdownHeight,
+      width: MediaQuery.of(context).size.width * 0.5,
+      child: PopupMenuButton<int>(
+        onOpened: () {
+          // 開いた瞬間に並び替え
+          _filteredItems = List.from(_originalItemsOrder);
+          _prioritizeSelectedItems();
+        },
+        itemBuilder: (context) {
+          _tempSelectedItems.clear();
 
-              // _selectedCheckboxItemsにあるvalueをaddする
-              _selectedCheckboxItems.forEach(_tempSelectedItems.add);
+          // _selectedCheckboxItemsにあるvalueをaddする
+          _selectedCheckboxItems.forEach(_tempSelectedItems.add);
 
-              return [
-                PopupMenuItem<int>(
-                  enabled: false,
-                  child: SizedBox(
-                    height: popupHeight,
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    child: StatefulBuilder(
-                      builder: (context, setState) {
-                        final itemsWidgets = <Widget>[];
+          return [
+            PopupMenuItem<int>(
+              enabled: false,
+              child: SizedBox(
+                height: popupHeight,
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: StatefulBuilder(
+                  builder: (context, setState) {
+                    final itemsWidgets = <Widget>[];
 
-                        var dividerAdded = false;
-                        for (var i = 0; i < _filteredItems.length; i++) {
-                          final item = _filteredItems[i];
-                          final isSelected =
-                              _tempSelectedItems.contains(item.$1);
-                          // 水平線
-                          if (_dividerPositions[i] && !dividerAdded) {
-                            itemsWidgets.add(const Divider());
-                            dividerAdded = true;
-                          }
-                          itemsWidgets.add(
-                            CheckboxListTile(
-                              controlAffinity: ListTileControlAffinity.leading,
-                              title: Text(item.$2),
-                              value: isSelected,
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  if (value == true) {
-                                    _tempSelectedItems.add(item.$1);
-                                  } else {
-                                    _tempSelectedItems.remove(item.$1);
-                                  }
-                                  // チェックボックスの操作後は並び替えをしない
-                                });
-                              },
+                    var dividerAdded = false;
+                    for (var i = 0; i < _filteredItems.length; i++) {
+                      final item = _filteredItems[i];
+                      final isSelected = _tempSelectedItems.contains(item.$1);
+                      // 水平線
+                      if (_dividerPositions[i] && !dividerAdded) {
+                        itemsWidgets.add(const Divider());
+                        dividerAdded = true;
+                      }
+                      itemsWidgets.add(
+                        CheckboxListTile(
+                          controlAffinity: ListTileControlAffinity.leading,
+                          title: Text(item.$2),
+                          value: isSelected,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              if (value == true) {
+                                _tempSelectedItems.add(item.$1);
+                              } else {
+                                _tempSelectedItems.remove(item.$1);
+                              }
+                              // チェックボックスの操作後は並び替えをしない
+                            });
+                          },
+                        ),
+                      );
+                    }
+                    if (_tempSelectedItems.isEmpty) {
+                      // 水平線消す
+                      itemsWidgets.removeWhere(
+                        (widget) => widget is Divider,
+                      );
+                    }
+
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: TextField(
+                            // フォーカスを自動でセットする
+                            autofocus: true,
+                            decoration: InputDecoration(
+                              hintText: widget.searchHintText,
+                              // 虫眼鏡
+                              suffixIcon: const Icon(Icons.search),
                             ),
-                          );
-                        }
-                        if (_tempSelectedItems.isEmpty) {
-                          // 水平線消す
-                          itemsWidgets.removeWhere(
-                            (widget) => widget is Divider,
-                          );
-                        }
-
-                        return Column(
+                            onChanged: (query) {
+                              _updateSearchQuery(query, setState);
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          child: ListView(children: itemsWidgets),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: TextField(
-                                // フォーカスを自動でセットする
-                                autofocus: true,
-                                decoration: InputDecoration(
-                                  hintText: widget.searchHintText,
-                                  // 虫眼鏡
-                                  suffixIcon: const Icon(Icons.search),
-                                ),
-                                onChanged: (query) {
-                                  _updateSearchQuery(query, setState);
-                                },
-                              ),
+                            // キャンセル
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                _cancelSelection();
+                              },
+                              child: Text(widget.cancelText),
                             ),
-                            Expanded(
-                              child: ListView(children: itemsWidgets),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                // キャンセル
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    _cancelSelection();
-                                  },
-                                  child: Text(widget.cancelText),
-                                ),
-                                // OK
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    _applySelection();
-                                  },
-                                  child: Text(widget.okText),
-                                ),
-                              ],
+                            // OK
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                _applySelection();
+                              },
+                              child: Text(widget.okText),
                             ),
                           ],
-                        );
-                      },
-                    ),
-                  ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
-              ];
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              decoration: BoxDecoration(
-                border: Border.all(),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: sortedSelectedItems.map((item) {
-                          // タグ
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 6),
-                            child: Chip(
-                              label: Text(item.$2),
-                              // バツボタン
-                              deleteIcon: const Icon(
-                                Icons.clear,
-                                size: 18,
-                              ),
-                              onDeleted: () {
-                                // $1: value
-                                _removeItem(item.$1);
-                              },
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  if (_selectedCheckboxItems.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${_selectedCheckboxItems.length}',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  if (_selectedCheckboxItems.isNotEmpty)
-                    // バツボタン
-                    IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: _clearAll,
-                    ),
-                  // 下向きボタン
-                  const Icon(Icons.arrow_drop_down),
-                ],
               ),
             ),
+          ];
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border.all(),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: sortedSelectedItems.map((item) {
+                      // タグ
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: Chip(
+                          label: Text(item.$2),
+                          // バツボタン
+                          deleteIcon: const Icon(
+                            Icons.clear,
+                            size: 18,
+                          ),
+                          onDeleted: () {
+                            // $1: value
+                            _removeItem(item.$1);
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              if (_selectedCheckboxItems.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${_selectedCheckboxItems.length}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              if (_selectedCheckboxItems.isNotEmpty)
+                // バツボタン
+                IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: _clearAll,
+                ),
+              // 下向きボタン
+              const Icon(Icons.arrow_drop_down),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

@@ -118,6 +118,9 @@ class DropdownCheckboxState extends State<DropdownCheckbox> {
     setState(() {
       _selectedCheckboxItems.clear();
       _updateSelectedText();
+
+      // 返す
+      widget.onChanged(_selectedCheckboxItems);
     });
   }
 
